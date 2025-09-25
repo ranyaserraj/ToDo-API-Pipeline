@@ -14,6 +14,7 @@ const {
   getCategories, 
   clearCompletedTasks 
 } = require('./tasks');
+const { generatePrometheusMetrics } = require('./carbon-metrics');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -337,6 +338,18 @@ app.get('/health', (req, res) => {
     message: 'API ToDo est opérationnelle',
     timestamp: new Date().toISOString()
   });
+});
+
+// Route pour les métriques Prometheus
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.send(generatePrometheusMetrics());
+});
+
+// Route pour les métriques d'empreinte carbone
+app.get('/carbon-metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.send(generatePrometheusMetrics());
 });
 
 // Gestion des routes non trouvées

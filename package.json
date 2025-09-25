@@ -19,20 +19,30 @@
     "flame": "clinic flame -- node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "@influxdata/influxdb-client": "^1.35.0",
     "compression": "^1.7.4",
-    "helmet": "^7.1.0",
     "cors": "^2.8.5",
-    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
-    "dotenv": "^16.3.1"
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "supertest": "^6.3.3"
   },
-  "keywords": ["todo", "api", "rest", "docker", "performance", "heavy", "baseline", "stress-test"],
+  "keywords": [
+    "todo",
+    "api",
+    "rest",
+    "docker",
+    "performance",
+    "heavy",
+    "baseline",
+    "stress-test"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {

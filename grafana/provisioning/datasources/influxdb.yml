@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: metrics
+    user: admin
+    secureJsonData:
+      password: admin123
+    jsonData:
+      httpMode: GET
+      organization: carbon-footprint
+      defaultBucket: metrics
+    isDefault: true
+    editable: true

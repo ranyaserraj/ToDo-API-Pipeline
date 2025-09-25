@@ -1,0 +1,95 @@
+﻿{
+    "timestamp":  "2025-09-25T17:03:13.386Z",
+    "optimizations":  {
+                          "jenkins":  {
+                                          "diskUsage":  "50MB",
+                                          "memoryUsage":  "256MB",
+                                          "cpuUsage":  "0.1 CPU cores",
+                                          "buildTime":  "8 seconds"
+                                      },
+                          "docker":  {
+                                         "containerCPU":  "0.05 CPU cores",
+                                         "imageSize":  "25MB (node:18-alpine optimise)",
+                                         "containerMemory":  "64MB",
+                                         "buildTime":  "8 seconds"
+                                     },
+                          "application":  {
+                                              "diskUsage":  "25MB",
+                                              "memoryUsage":  "32MB",
+                                              "networkTraffic":  "0.5MB",
+                                              "cpuUsage":  "0.025 CPU cores"
+                                          }
+                      },
+    "savings":  {
+                    "percentage":  40,
+                    "co2Emissions":  0.000700,
+                    "electricity":  0.00140
+                },
+    "baseline":  {
+                     "timestamp":  "2025-09-25T15:02:35.185Z",
+                     "pipeline":  {
+                                      "name":  "ToDo-API-Baseline",
+                                      "type":  "Docker",
+                                      "region":  "Local",
+                                      "startTime":  "2025-09-25T15:02:35.184Z",
+                                      "metrics":  {
+                                                      "docker":  {
+                                                                     "imageSize":  "45MB (node:18-alpine)",
+                                                                     "buildTime":  "16 seconds",
+                                                                     "containerMemory":  "128MB",
+                                                                     "containerCPU":  "0.1 CPU cores"
+                                                                 },
+                                                      "jenkins":  {
+                                                                      "buildTime":  "16 seconds",
+                                                                      "memoryUsage":  "512MB",
+                                                                      "cpuUsage":  "0.2 CPU cores",
+                                                                      "diskUsage":  "100MB"
+                                                                  },
+                                                      "application":  {
+                                                                          "memoryUsage":  "64MB",
+                                                                          "cpuUsage":  "0.05 CPU cores",
+                                                                          "diskUsage":  "50MB",
+                                                                          "networkTraffic":  "1MB"
+                                                                      }
+                                                  }
+                                  },
+                     "carbonFootprint":  {
+                                             "electricity":  {
+                                                                 "docker":  0.001,
+                                                                 "jenkins":  0.002,
+                                                                 "application":  0.0005
+                                                             },
+                                             "co2Emissions":  {
+                                                                  "docker":  0.0005,
+                                                                  "jenkins":  0.001,
+                                                                  "application":  0.00025
+                                                              },
+                                             "total":  {
+                                                           "electricity":  0.0035,
+                                                           "co2Emissions":  0.00175
+                                                       }
+                                         },
+                     "recommendations":  [
+                                             "Utiliser des images Docker plus lÃ©gÃ¨res",
+                                             "Optimiser les tests pour rÃ©duire la durÃ©e",
+                                             "ImplÃ©menter un cache Docker",
+                                             "Utiliser des ressources partagÃ©es"
+                                         ]
+                 },
+    "carbonFootprint":  {
+                            "total":  {
+                                          "co2Emissions":  0.000875,
+                                          "electricity":  0.00175
+                                      },
+                            "co2Emissions":  {
+                                                 "jenkins":  0.0005,
+                                                 "docker":  0.00025,
+                                                 "application":  0.000125
+                                             },
+                            "electricity":  {
+                                                "jenkins":  0.001,
+                                                "docker":  0.0005,
+                                                "application":  0.00025
+                                            }
+                        }
+}
