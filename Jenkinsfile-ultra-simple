@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '📥 Récupération du code source...'
+                checkout scm
+            }
+        }
+        
+        stage('Setup') {
+            steps {
+                echo '🔧 Configuration...'
+                sh '''
+                    echo "Node.js version:"
+                    node --version || echo "Node.js non trouvé"
+                    echo "NPM version:"
+                    npm --version || echo "NPM non trouvé"
+                    echo "Docker version:"
+                    docker --version || echo "Docker non trouvé"
+                    echo "PWD:"
+                    pwd
+                    echo "LS:"
+                    ls -la
+                '''
+            }
+        }
+        
+        stage('Install') {
+            steps {
+                echo '📦 Installation des dépendances...'
+                sh 'npm install'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                echo '🧪 Tests unitaires...'
+                sh 'npm run test:unit'
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo '🧹 Nettoyage...'
+        }
+        success {
+            echo '✅ Pipeline terminé avec succès !'
+        }
+        failure {
+            echo '❌ Pipeline échoué !'
+        }
+    }
+}

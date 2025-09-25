@@ -1,0 +1,46 @@
+{
+    "timestamp": "2025-09-25T18:00:13.447Z",
+    "pipeline": {
+        "name": "ToDo-API-Local",
+        "type": "Local-Docker",
+        "region": "Local-Machine",
+        "metrics": {
+            "cpu": {
+                "cores": 12,
+                "usage": "4.09%",
+                "powerWatts": "0.049W",
+                "powerKWh": "0.000049kWh"
+            },
+            "memory": {
+                "total": "16085MB",
+                "used": "13916MB",
+                "free": "2169MB",
+                "powerWatts": "139.158W",
+                "powerKWh": "0.139158kWh"
+            },
+            "docker": {
+                "imageSize": "45MB",
+                "containerCount": 5,
+                "powerWatts": "2.500W",
+                "powerKWh": "0.002500kWh"
+            },
+            "network": {
+                "interfaces": 1,
+                "powerWatts": "0.100W",
+                "powerKWh": "0.000100kWh"
+            }
+        }
+    },
+    "carbonFootprint": {
+        "totalPowerKWh": 0.14180743028323461,
+        "co2Emissions": 0.008083023526144373,
+        "electricityFactor": 0.057
+    },
+    "localFactors": {
+        "electricityFactor": 0.057,
+        "memoryFactor": 0.000001,
+        "cpuFactor": 0.00001,
+        "diskFactor": 1e-7,
+        "networkFactor": 1e-7
+    }
+}

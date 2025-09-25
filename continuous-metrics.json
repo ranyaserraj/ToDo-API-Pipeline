@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-09-25T18:59:58.865Z",
+  "cpu": {
+    "cores": 12,
+    "usage_percent": 45,
+    "power_watts": 5.4
+  },
+  "memory": {
+    "total_bytes": 16866344960,
+    "used_bytes": 14467203072,
+    "used_percent": 85.77556729872552
+  },
+  "docker": {
+    "container_count": 0
+  },
+  "carbon": {
+    "power_watts": 143.47,
+    "power_kwh": 0.14347,
+    "co2_emissions_kg": 0.008177789999999999,
+    "electricity_factor": 0.057
+  }
+}
