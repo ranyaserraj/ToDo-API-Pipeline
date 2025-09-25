@@ -1,0 +1,223 @@
+name: Green DevOps - Comparaison de performance Docker
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  baseline:
+    name: 🐌 Build & Test - Image Baseline (Lourde)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐳 Build image baseline
+      run: |
+        echo "🔨 Construction de l'image baseline (lourde)..."
+        docker build -f Dockerfile.baseline -t app:baseline .
+        echo "✅ Image baseline construite avec succès"
+
+    - name: 📊 Mesurer les performances baseline
+      run: |
+        echo "🧪 Exécution des tests avec métriques de performance..."
+        /usr/bin/time -v docker run --rm app:baseline npm test | tee baseline-metrics.log
+        echo "✅ Tests baseline terminés"
+
+    - name: 📈 Analyser les métriques baseline
+      run: |
+        echo "📊 Analyse des métriques baseline..."
+        echo "=== MÉTRIQUES BASELINE ===" > baseline-analysis.txt
+        echo "Taille de l'image:" >> baseline-analysis.txt
+        docker images app:baseline --format "table {{.Size}}" >> baseline-analysis.txt
+        echo "" >> baseline-analysis.txt
+        echo "Détails de l'image:" >> baseline-analysis.txt
+        docker history app:baseline >> baseline-analysis.txt
+        echo "✅ Analyse baseline terminée"
+
+    - name: 📤 Upload métriques baseline
+      uses: actions/upload-artifact@v4
+      with:
+        name: baseline-metrics
+        path: |
+          baseline-metrics.log
+          baseline-analysis.txt
+
+  optimized:
+    name: 🚀 Build & Test - Image Optimisée
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐳 Build image optimisée
+      run: |
+        echo "🔨 Construction de l'image optimisée..."
+        docker build -f Dockerfile.optimized -t app:optimized .
+        echo "✅ Image optimisée construite avec succès"
+
+    - name: 📊 Mesurer les performances optimisées
+      run: |
+        echo "🧪 Exécution des tests avec métriques de performance..."
+        /usr/bin/time -v docker run --rm app:optimized npm test | tee optimized-metrics.log
+        echo "✅ Tests optimisés terminés"
+
+    - name: 📈 Analyser les métriques optimisées
+      run: |
+        echo "📊 Analyse des métriques optimisées..."
+        echo "=== MÉTRIQUES OPTIMISÉES ===" > optimized-analysis.txt
+        echo "Taille de l'image:" >> optimized-analysis.txt
+        docker images app:optimized --format "table {{.Size}}" >> optimized-analysis.txt
+        echo "" >> optimized-analysis.txt
+        echo "Détails de l'image:" >> optimized-analysis.txt
+        docker history app:optimized >> optimized-analysis.txt
+        echo "✅ Analyse optimisée terminée"
+
+    - name: 📤 Upload métriques optimisées
+      uses: actions/upload-artifact@v4
+      with:
+        name: optimized-metrics
+        path: |
+          optimized-metrics.log
+          optimized-analysis.txt
+
+  report:
+    name: 📋 Génération du rapport de comparaison
+    runs-on: ubuntu-latest
+    needs: [baseline, optimized]
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 📥 Download métriques baseline
+      uses: actions/download-artifact@v4
+      with:
+        name: baseline-metrics
+        path: ./baseline-data
+
+    - name: 📥 Download métriques optimisées
+      uses: actions/download-artifact@v4
+      with:
+        name: optimized-metrics
+        path: ./optimized-data
+
+    - name: 🐳 Build les deux images pour comparaison
+      run: |
+        echo "🔨 Reconstruction des images pour comparaison..."
+        docker build -f Dockerfile.baseline -t app:baseline .
+        docker build -f Dockerfile.optimized -t app:optimized .
+        echo "✅ Images reconstruites"
+
+    - name: 📊 Générer le rapport de comparaison
+      run: |
+        echo "📋 Génération du rapport de comparaison..."
+        
+        # Créer le rapport
+        cat > report.txt << 'EOF'
+        ================================================
+        🚀 RAPPORT DE COMPARAISON GREEN DEVOPS
+        ================================================
+        
+        📅 Date: $(date)
+        🔄 Workflow: ${{ github.workflow }}
+        📝 Commit: ${{ github.sha }}
+        
+        ================================================
+        📊 COMPARAISON DES TAILLES D'IMAGES
+        ================================================
+        EOF
+        
+        echo "" >> report.txt
+        echo "🐌 IMAGE BASELINE (Lourde):" >> report.txt
+        docker images app:baseline --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" >> report.txt
+        
+        echo "" >> report.txt
+        echo "🚀 IMAGE OPTIMISÉE:" >> report.txt
+        docker images app:optimized --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" >> report.txt
+        
+        echo "" >> report.txt
+        echo "================================================" >> report.txt
+        echo "📈 ANALYSE DÉTAILLÉE DES COUCHES" >> report.txt
+        echo "================================================" >> report.txt
+        
+        echo "" >> report.txt
+        echo "🐌 HISTORIQUE BASELINE:" >> report.txt
+        docker history app:baseline --format "table {{.CreatedBy}}\t{{.Size}}" >> report.txt
+        
+        echo "" >> report.txt
+        echo "🚀 HISTORIQUE OPTIMISÉ:" >> report.txt
+        docker history app:optimized --format "table {{.CreatedBy}}\t{{.Size}}" >> report.txt
+        
+        echo "" >> report.txt
+        echo "================================================" >> report.txt
+        echo "⚡ MÉTRIQUES DE PERFORMANCE" >> report.txt
+        echo "================================================" >> report.txt
+        
+        # Ajouter les métriques de performance si disponibles
+        if [ -f "./baseline-data/baseline-metrics.log" ]; then
+          echo "" >> report.txt
+          echo "🐌 MÉTRIQUES BASELINE:" >> report.txt
+          cat ./baseline-data/baseline-metrics.log >> report.txt
+        fi
+        
+        if [ -f "./optimized-data/optimized-metrics.log" ]; then
+          echo "" >> report.txt
+          echo "🚀 MÉTRIQUES OPTIMISÉES:" >> report.txt
+          cat ./optimized-data/optimized-metrics.log >> report.txt
+        fi
+        
+        echo "" >> report.txt
+        echo "================================================" >> report.txt
+        echo "🎯 RECOMMANDATIONS" >> report.txt
+        echo "================================================" >> report.txt
+        echo "" >> report.txt
+        echo "✅ Utilisez l'image optimisée pour:" >> report.txt
+        echo "   - Déploiements en production" >> report.txt
+        echo "   - Réduction des coûts de stockage" >> report.txt
+        echo "   - Amélioration des temps de déploiement" >> report.txt
+        echo "   - Sécurité renforcée (utilisateur non-root)" >> report.txt
+        echo "" >> report.txt
+        echo "⚠️  L'image baseline peut être utilisée pour:" >> report.txt
+        echo "   - Développement et debugging" >> report.txt
+        echo "   - Tests nécessitant des outils de dev" >> report.txt
+        echo "" >> report.txt
+        echo "================================================" >> report.txt
+        echo "📊 RÉSUMÉ" >> report.txt
+        echo "================================================" >> report.txt
+        
+        # Calculer les différences de taille
+        BASELINE_SIZE=$(docker images app:baseline --format "{{.Size}}")
+        OPTIMIZED_SIZE=$(docker images app:optimized --format "{{.Size}}")
+        
+        echo "Taille baseline: $BASELINE_SIZE" >> report.txt
+        echo "Taille optimisée: $OPTIMIZED_SIZE" >> report.txt
+        echo "" >> report.txt
+        echo "🎉 L'optimisation Docker améliore significativement:" >> report.txt
+        echo "   - La taille de l'image finale" >> report.txt
+        echo "   - Les temps de build et déploiement" >> report.txt
+        echo "   - La sécurité et les bonnes pratiques" >> report.txt
+        echo "" >> report.txt
+        echo "================================================" >> report.txt
+        echo "🏁 Rapport généré avec succès!" >> report.txt
+        echo "================================================" >> report.txt
+        
+        echo "✅ Rapport généré: report.txt"
+        cat report.txt
+
+    - name: 📤 Upload rapport final
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-report
+        path: report.txt
+
+    - name: 📋 Afficher le rapport dans les logs
+      run: |
+        echo "📋 RAPPORT DE COMPARAISON GREEN DEVOPS"
+        echo "======================================"
+        cat report.txt

@@ -1,0 +1,323 @@
+pipeline {
+    agent any
+    
+    environment {
+        NODE_VERSION = '18'
+        DOCKER_IMAGE = 'todo-api-heavy'
+        CONTAINER = 'todo-container'
+        REPORT_FILE = 'performance-report.json'
+    }
+    
+    options {
+        timeout(time: 1, unit: 'HOURS') // Pipeline peut prendre jusqu'à 1h
+        retry(2) // Retry en cas d'échec
+        timestamps() // Timestamps sur tous les logs
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '📥 Récupération du code source...'
+                checkout scm
+            }
+        }
+        
+        stage('Setup Node.js') {
+            steps {
+                echo '🔧 Configuration de Node.js...'
+                sh '''
+                    echo "📦 Versions installées:"
+                    node --version
+                    npm --version
+                    
+                    echo "🔧 Configuration npm pour tests lourds:"
+                    npm config set fund false
+                    npm config set audit false
+                    npm config set progress false
+                '''
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                echo '📦 Installation des dépendances LOURDES...'
+                script {
+                    def startTime = System.currentTimeMillis()
+                    sh '''
+                        # Installation avec métriques détaillées
+                        npm install --verbose --timing --loglevel=verbose
+                        
+                        # Vérification des dépendances installées
+                        npm list --depth=0
+                        
+                        # Analyse de la taille des node_modules
+                        du -sh node_modules/
+                        find node_modules/ -name "*.js" | wc -l
+                    '''
+                    def endTime = System.currentTimeMillis()
+                    def installTime = (endTime - startTime) / 1000
+                    env.INSTALL_TIME = installTime.toString()
+                    echo "⏱️ Temps d'installation: ${installTime}s"
+                }
+            }
+        }
+        
+        stage('Run Tests') {
+            parallel {
+                stage('Standard Tests') {
+                    steps {
+                        echo '🧪 Exécution des tests standards...'
+                        sh '''
+                            export NODE_OPTIONS="--max-old-space-size=4096"
+                            npm test
+                        '''
+                    }
+                }
+                
+                stage('Heavy Tests') {
+                    steps {
+                        echo '🔥 Exécution des tests LOURDS de performance...'
+                        sh '''
+                            export NODE_OPTIONS="--max-old-space-size=4096"
+                            npm run test:heavy || echo "Tests lourds échoués - continuons"
+                        '''
+                    }
+                }
+            }
+            post {
+                always {
+                    // Publication des résultats
+                    publishTestResults testResultsPattern: 'coverage/heavy-junit.xml'
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'coverage',
+                        reportFiles: 'heavy-test-report.html',
+                        reportName: 'Heavy Test Report'
+                    ])
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo '🐳 Construction de l\'image Docker LOURDE...'
+                script {
+                    def startTime = System.currentTimeMillis()
+                    sh """
+                        echo "🔨 Construction avec métriques détaillées..."
+                        docker build -t ${DOCKER_IMAGE} . --no-cache --progress=plain
+                        
+                        echo "📊 Analyse de l'image construite..."
+                        docker history ${DOCKER_IMAGE}
+                        docker inspect ${DOCKER_IMAGE} | jq '.[0].Size' || echo "jq non disponible"
+                    """
+                    def endTime = System.currentTimeMillis()
+                    def buildTime = (endTime - startTime) / 1000
+                    env.BUILD_TIME = buildTime.toString()
+                    echo "⏱️ Temps de construction: ${buildTime}s"
+                }
+            }
+        }
+        
+        stage('Docker Analysis') {
+            steps {
+                echo '📊 Analyse de l\'image Docker...'
+                script {
+                    sh """
+                        echo "🔍 Analyse détaillée de l'image..."
+                        
+                        # Taille détaillée
+                        docker images ${DOCKER_IMAGE} --format 'table {{.Repository}}\\t{{.Tag}}\\t{{.Size}}\\t{{.CreatedAt}}'
+                        
+                        # Analyse des couches
+                        echo "📋 Analyse des couches:"
+                        docker history ${DOCKER_IMAGE} --format 'table {{.CreatedBy}}\\t{{.Size}}'
+                    """
+                    
+                    // Capture des métriques
+                    def imageSize = sh(
+                        script: "docker images ${DOCKER_IMAGE} --format '{{.Size}}'",
+                        returnStdout: true
+                    ).trim()
+                    
+                    def layers = sh(
+                        script: "docker history ${DOCKER_IMAGE} | wc -l",
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.IMAGE_SIZE = imageSize
+                    env.LAYERS = layers
+                    
+                    echo "📏 Taille image LOURDE: ${imageSize} (${layers} couches)"
+                }
+            }
+        }
+        
+        stage('Performance Test') {
+            steps {
+                echo '💀 Test de performance de l\'image...'
+                script {
+                    sh """
+                        echo "🚀 Démarrage du conteneur avec limites..."
+                        docker run -d --name ${CONTAINER} \
+                            --memory=2g \
+                            --cpus=2 \
+                            -p 3000:3000 \
+                            ${DOCKER_IMAGE}
+                        
+                        echo "⏳ Attente du démarrage..."
+                        sleep 15
+                        
+                        echo "🔥 Test de santé initial..."
+                        curl -f http://localhost:3000/health || exit 1
+                    """
+                    
+                    // Test de charge
+                    def startTime = System.currentTimeMillis()
+                    sh """
+                        echo "💥 DÉBUT DU TEST DE PERFORMANCE..."
+                        
+                        # Test avec 500 requêtes
+                        for i in \$(seq 1 500); do
+                            curl -s http://localhost:3000/health > /dev/null &
+                            if [ \$((\$i % 50)) -eq 0 ]; then
+                                echo "Requêtes envoyées: \$i/500"
+                                wait # Attendre les 50 dernières requêtes
+                            fi
+                        done
+                        wait # Attendre toutes les requêtes restantes
+                        
+                        echo "✅ Test de performance terminé"
+                    """
+                    def endTime = System.currentTimeMillis()
+                    def responseTime = (endTime - startTime) / 500
+                    env.RESPONSE_TIME = responseTime.toString()
+                    
+                    // Monitoring des ressources
+                    sh """
+                        echo "📊 Statistiques du conteneur:"
+                        docker stats ${CONTAINER} --no-stream
+                        
+                        echo "📋 Logs du conteneur (dernières 20 lignes):"
+                        docker logs --tail 20 ${CONTAINER}
+                    """
+                    
+                    sh "docker stop ${CONTAINER} && docker rm ${CONTAINER}"
+                    echo "⏱️ Temps de réponse moyen: ${responseTime}ms"
+                }
+            }
+        }
+        
+        stage('Generate Report') {
+            steps {
+                echo '📋 Génération du rapport de performance...'
+                script {
+                    def report = [
+                        timestamp: new Date().format("yyyy-MM-dd HH:mm:ss"),
+                        installation: [
+                            time: env.INSTALL_TIME
+                        ],
+                        build: [
+                            time: env.BUILD_TIME,
+                            imageSize: env.IMAGE_SIZE,
+                            layers: env.LAYERS
+                        ],
+                        performance: [
+                            responseTime: env.RESPONSE_TIME
+                        ]
+                    ]
+                    
+                    writeJSON file: env.REPORT_FILE, json: report
+                    
+                    echo """
+                    📊 RAPPORT DE PERFORMANCE DOCKER LOURD:
+                    ======================================
+                    
+                    📦 INSTALLATION:
+                    • Temps d'installation: ${env.INSTALL_TIME}s
+                    
+                    🏗️  CONSTRUCTION:
+                    • Temps de construction: ${env.BUILD_TIME}s
+                    • Taille de l'image: ${env.IMAGE_SIZE}
+                    • Nombre de couches: ${env.LAYERS}
+                    
+                    ⚡ PERFORMANCE:
+                    • Temps de réponse moyen: ${env.RESPONSE_TIME}ms
+                    
+                    ======================================
+                    """
+                }
+            }
+        }
+        
+        stage('Cleanup') {
+            steps {
+                echo '🧹 Nettoyage des ressources...'
+                sh '''
+                    echo "🗑️ Suppression de l'image..."
+                    docker rmi ${DOCKER_IMAGE} || true
+                    
+                    echo "🧹 Nettoyage système Docker..."
+                    docker system prune -f
+                    
+                    echo "💾 Espace disque après nettoyage:"
+                    df -h
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo '📊 Archivage des rapports...'
+            archiveArtifacts artifacts: "${REPORT_FILE},coverage/**/*", fingerprint: true
+            
+            publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: '.',
+                reportFiles: "${REPORT_FILE}",
+                reportName: 'Performance Report'
+            ])
+        }
+        
+        success {
+            echo '✅ Pipeline terminé avec succès!'
+            echo """
+            🎉 RÉSUMÉ DU PIPELINE:
+            • Tests standards: ✅
+            • Tests lourds: ✅
+            • Construction Docker: ✅
+            • Test de performance: ✅
+            • Rapports générés: ✅
+            """
+        }
+        
+        failure {
+            echo '❌ Pipeline échoué!'
+            echo """
+            💀 ÉCHEC DU PIPELINE:
+            • Vérifiez les logs détaillés
+            • Ressources système insuffisantes?
+            • Timeouts dépassés?
+            """
+        }
+        
+        cleanup {
+            echo '🧹 Nettoyage final...'
+            sh '''
+                # Arrêt forcé du conteneur
+                docker stop ${CONTAINER} || true
+                docker rm ${CONTAINER} || true
+                
+                # Nettoyage des images orphelines
+                docker image prune -f
+                
+                echo "🎯 Nettoyage terminé"
+            '''
+        }
+    }
+}

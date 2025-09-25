@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-09-24T19:42:13.758Z",
+  "summary": {
+    "totalJobs": 6,
+    "totalDuration": 125,
+    "totalCarbonFootprint": 0.76,
+    "totalCost": 0.10416666666666667,
+    "totalEnergyConsumption": 1.6
+  },
+  "jobs": [
+    {
+      "name": "Build Baseline",
+      "duration": 15,
+      "carbonFootprint": 0.095,
+      "cost": 0.0125,
+      "energyConsumption": 0.2,
+      "machineType": "large",
+      "platform": "jenkins",
+      "region": "global"
+    },
+    {
+      "name": "Build Optimized",
+      "duration": 12,
+      "carbonFootprint": 0.07600000000000001,
+      "cost": 0.010000000000000002,
+      "energyConsumption": 0.16000000000000003,
+      "machineType": "large",
+      "platform": "jenkins",
+      "region": "global"
+    },
+    {
+      "name": "Tests Unitaires",
+      "duration": 8,
+      "carbonFootprint": 0.019,
+      "cost": 0.006666666666666667,
+      "energyConsumption": 0.04,
+      "machineType": "medium",
+      "platform": "jenkins",
+      "region": "global"
+    },
+    {
+      "name": "Tests Performance",
+      "duration": 25,
+      "carbonFootprint": 0.15833333333333335,
+      "cost": 0.020833333333333336,
+      "energyConsumption": 0.33333333333333337,
+      "machineType": "large",
+      "platform": "jenkins",
+      "region": "global"
+    },
+    {
+      "name": "Tests Docker",
+      "duration": 20,
+      "carbonFootprint": 0.12666666666666665,
+      "cost": 0.016666666666666666,
+      "energyConsumption": 0.26666666666666666,
+      "machineType": "large",
+      "platform": "jenkins",
+      "region": "global"
+    },
+    {
+      "name": "Tests Lourds",
+      "duration": 45,
+      "carbonFootprint": 0.28500000000000003,
+      "cost": 0.037500000000000006,
+      "energyConsumption": 0.6000000000000001,
+      "machineType": "large",
+      "platform": "jenkins",
+      "region": "global"
+    }
+  ],
+  "recommendations": [
+    {
+      "type": "performance",
+      "priority": "high",
+      "message": "Durée totale élevée: 125 minutes",
+      "suggestion": "Parallélisez les jobs ou optimisez les tests"
+    }
+  ],
+  "environmentalImpact": {
+    "carbonFootprintKg": 0.76,
+    "equivalentTrees": 0,
+    "equivalentKm": 0
+  }
+}
