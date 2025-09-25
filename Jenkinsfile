@@ -60,7 +60,7 @@ pipeline {
             steps {
                 echo '🐳 Construction de l\'image baseline...'
                 sh '''
-                    docker build -f Dockerfile.baseline -t ${IMAGE_NAME}:baseline-${BUILD_NUMBER} .
+                    docker build -t ${IMAGE_NAME}:baseline-${BUILD_NUMBER} .
                     docker tag ${IMAGE_NAME}:baseline-${BUILD_NUMBER} ${IMAGE_NAME}:baseline-latest
                 '''
             }
@@ -70,7 +70,7 @@ pipeline {
             steps {
                 echo '🚀 Construction de l\'image optimisée...'
                 sh '''
-                    docker build -f Dockerfile.optimized -t ${IMAGE_NAME}:optimized-${BUILD_NUMBER} .
+                    docker build -t ${IMAGE_NAME}:optimized-${BUILD_NUMBER} .
                     docker tag ${IMAGE_NAME}:optimized-${BUILD_NUMBER} ${IMAGE_NAME}:optimized-latest
                 '''
             }
