@@ -55,3 +55,5 @@ console.log('   📊 Facteur d\'électricité');
 console.log('   📈 Graphiques temporels');
 console.log('');
 console.log('✅ Dashboard prêt pour l\'import !');
+
+

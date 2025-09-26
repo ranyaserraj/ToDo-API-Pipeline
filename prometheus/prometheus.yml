@@ -39,3 +39,5 @@ scrape_configs:
     scrape_interval: 30s
     metrics_path: '/carbon-metrics'
     scrape_timeout: 10s
+
+

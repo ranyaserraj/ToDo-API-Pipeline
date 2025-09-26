@@ -20,7 +20,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware pour parser le JSON
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Servir les fichiers statiques
 app.use(express.static('public'));
@@ -45,7 +45,7 @@ app.get('/tasks', (req, res) => {
 // Route pour ajouter une nouvelle tâche
 app.post('/tasks', (req, res) => {
   try {
-    const { task } = req.body;
+    const { task, priority, category, dueDate } = req.body;
     
     if (!task || typeof task !== 'string' || task.trim() === '') {
       return res.status(400).json({
@@ -54,7 +54,7 @@ app.post('/tasks', (req, res) => {
       });
     }
 
-    const newTask = addTask(task.trim());
+    const newTask = addTask(task.trim(), priority, category, dueDate);
     res.status(201).json({
       success: true,
       data: newTask,
@@ -124,6 +124,7 @@ app.patch('/tasks/:id/complete', (req, res) => {
 
     res.json({
       success: true,
+      data: completed,
       message: 'Tâche marquée comme complétée'
     });
   } catch (error) {
@@ -157,6 +158,7 @@ app.patch('/tasks/:id/uncomplete', (req, res) => {
 
     res.json({
       success: true,
+      data: uncompleted,
       message: 'Tâche marquée comme non complétée'
     });
   } catch (error) {
@@ -268,10 +270,11 @@ app.get('/categories', (req, res) => {
 // Route pour exporter les tâches
 app.get('/export', (req, res) => {
   try {
-    const jsonData = exportTasks();
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', 'attachment; filename="tasks-export.json"');
-    res.send(jsonData);
+    const exportData = exportTasks();
+    res.json({
+      success: true,
+      data: exportData
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -292,7 +295,7 @@ app.post('/import', (req, res) => {
       });
     }
 
-    const result = importTasks(jsonData, merge);
+    const result = importTasks(JSON.stringify(jsonData), merge);
     
     if (!result.success) {
       return res.status(400).json({
@@ -321,7 +324,7 @@ app.delete('/tasks/completed', (req, res) => {
     res.json({
       success: true,
       message: `${deletedCount} tâche(s) complétée(s) supprimée(s)`,
-      deletedCount: deletedCount
+      data: { deleted: deletedCount }
     });
   } catch (error) {
     res.status(500).json({

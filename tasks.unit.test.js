@@ -148,7 +148,8 @@ describe('🧪 Tests Unitaires - Fonctions tasks.js', () => {
       const task = addTask('Tâche à compléter');
       const result = completeTask(task.id);
       
-      expect(result).toBe(true);
+      expect(result).toBeDefined();
+      expect(result.completed).toBe(true);
       
       const updatedTask = getTaskById(task.id);
       expect(updatedTask.completed).toBe(true);
@@ -160,7 +161,8 @@ describe('🧪 Tests Unitaires - Fonctions tasks.js', () => {
       completeTask(task.id);
       const result = uncompleteTask(task.id);
       
-      expect(result).toBe(true);
+      expect(result).toBeDefined();
+      expect(result.completed).toBe(false);
       
       const updatedTask = getTaskById(task.id);
       expect(updatedTask.completed).toBe(false);
@@ -285,8 +287,7 @@ describe('🧪 Tests Unitaires - Fonctions tasks.js', () => {
       addTask('Tâche 1');
       addTask('Tâche 2');
       
-      const jsonData = exportTasks();
-      const data = JSON.parse(jsonData);
+      const data = exportTasks();
       
       expect(data.tasks).toHaveLength(2);
       expect(data.exportedAt).toBeDefined();

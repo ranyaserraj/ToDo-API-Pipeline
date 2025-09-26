@@ -92,3 +92,5 @@ Write-Host "   📈 Dashboard mis à jour en temps réel" -ForegroundColor White
 Write-Host "   ⚡ Calcul d'empreinte carbone dynamique" -ForegroundColor White
 Write-Host ""
 Write-Host "⏹️  Pour arrêter: Appuyez sur Ctrl+C dans le terminal" -ForegroundColor Red
+
+

@@ -239,3 +239,5 @@ collectLocalMetrics().then(report => {
     console.error('❌ Erreur lors de la collecte locale:', error.message);
     process.exit(1);
 });
+
+

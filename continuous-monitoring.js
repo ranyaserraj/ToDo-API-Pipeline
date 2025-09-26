@@ -131,3 +131,5 @@ process.on('SIGINT', () => {
 // Première collecte
 const initialMetrics = collectMetrics();
 updateDashboard(initialMetrics);
+
+

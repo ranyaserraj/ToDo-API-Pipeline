@@ -240,6 +240,11 @@ describe('🌐 Tests d\'intégration - API REST', () => {
     });
 
     test('devrait filtrer par priorité', async () => {
+      // Créer une tâche avec priorité high
+      await request(app)
+        .post('/tasks')
+        .send({ task: 'Tâche prioritaire', priority: 'high' });
+
       const response = await request(app)
         .get('/tasks/search')
         .query({ priority: 'high' })
@@ -251,6 +256,11 @@ describe('🌐 Tests d\'intégration - API REST', () => {
     });
 
     test('devrait filtrer par catégorie', async () => {
+      // Créer une tâche avec catégorie Travail
+      await request(app)
+        .post('/tasks')
+        .send({ task: 'Tâche de travail', category: 'Travail' });
+
       const response = await request(app)
         .get('/tasks/search')
         .query({ category: 'Travail' })
@@ -370,7 +380,7 @@ describe('🌐 Tests d\'intégration - API REST', () => {
 
       const response = await request(app)
         .post('/import')
-        .send(importData)
+        .send({ jsonData: importData })
         .expect(200);
 
       expect(response.body.success).toBe(true);

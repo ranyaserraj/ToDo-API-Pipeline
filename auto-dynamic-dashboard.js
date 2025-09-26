@@ -287,3 +287,5 @@ function startContinuousMonitoring() {
 
 // Démarrer le système
 startContinuousMonitoring();
+
+

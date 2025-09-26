@@ -85,7 +85,7 @@ function completeTask(id) {
 
   task.completed = true;
   task.completedAt = new Date().toISOString();
-  return true;
+  return task;
 }
 
 /**
@@ -106,7 +106,7 @@ function uncompleteTask(id) {
 
   task.completed = false;
   delete task.completedAt;
-  return true;
+  return task;
 }
 
 /**
@@ -290,11 +290,11 @@ function getTaskStats() {
  * @returns {string} JSON des tâches
  */
 function exportTasks() {
-  return JSON.stringify({
+  return {
     tasks: tasks,
     exportedAt: new Date().toISOString(),
     version: '1.0'
-  }, null, 2);
+  };
 }
 
 /**

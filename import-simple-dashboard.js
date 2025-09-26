@@ -34,3 +34,5 @@ console.log('   🌍 CO2 Emissions (kg CO2e)');
 console.log('   📈 CPU Usage Over Time (graphique)');
 console.log('');
 console.log('✅ Dashboard simplifié prêt pour l\'import !');
+
+

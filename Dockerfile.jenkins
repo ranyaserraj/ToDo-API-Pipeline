@@ -14,3 +14,5 @@ USER jenkins
 
 # Vérifier l'installation
 RUN node --version && npm --version
+
+

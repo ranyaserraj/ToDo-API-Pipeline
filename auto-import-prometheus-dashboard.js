@@ -43,3 +43,5 @@ console.log('   📊 Les métriques se mettront à jour automatiquement');
 console.log('   🔄 Prometheus collecte les données en temps réel');
 console.log('   📈 Les graphiques évoluent automatiquement');
 console.log('   ⚡ Calcul d\'empreinte carbone en temps réel');
+
+

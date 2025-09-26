@@ -297,3 +297,5 @@ console.log('2. Importez: grafana-dashboard-dynamic-import.json');
 console.log('3. Le dashboard se mettra à jour automatiquement !');
 console.log('');
 console.log('✅ Système dynamique opérationnel !');
+
+
